@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace WebApplication2.Controllers
 {
@@ -16,6 +19,24 @@ namespace WebApplication2.Controllers
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
         {
             _logger = logger;
+        }
+
+        [HttpPost("GetToken")]
+        public string Auth(string login, string password)
+        {
+            // здесь как-то проверяем логин и пароль, получаем username
+            var claimAuth = new List<Claim> { new Claim(ClaimTypes.Name, "nameuser") };
+
+            var jwt = new JwtSecurityToken(
+            issuer: AuthOptions.ISSUER,
+            audience: AuthOptions.AUDIENCE,
+            claims: claimAuth,
+            expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(2)),
+            signingCredentials: new SigningCredentials(
+                AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+
+            var result = new JwtSecurityTokenHandler().WriteToken(jwt);
+            return result;
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
